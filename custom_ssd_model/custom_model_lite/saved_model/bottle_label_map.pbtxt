@@ -1,0 +1,35 @@
+item {
+    name: "closedstable",
+    id: 1,
+    display_name: "closedstable"
+}
+item {
+    name: "openlow",
+    id: 2,
+    display_name: "openlow"
+}
+item {
+    name: "openmore",
+    id: 3,
+    display_name: "openmore"
+}
+item {
+    name: "openstable",
+    id: 4,
+    display_name: "openstable"
+}
+item {
+    name: "unsealedlow",
+    id: 5,
+    display_name: "unsealedlow"
+}
+item {
+    name: "unsealmore",
+    id: 6,
+    display_name: "unsealmore"
+}
+item {
+    name: "unsealstable",
+    id: 7,
+    display_name: "unsealstable"
+}
