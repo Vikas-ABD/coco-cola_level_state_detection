@@ -1,7 +1,0 @@
-closedstable
-openlow
-openmore
-openstable
-unseallow
-unsealmore
-unsealstable
