@@ -115,7 +115,7 @@ else:
     interpreter = Interpreter(model_path=PATH_TO_CKPT)
 
 interpreter.allocate_tensors()
-
+ 
 # Get model details
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
