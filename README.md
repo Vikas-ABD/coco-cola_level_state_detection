@@ -59,4 +59,7 @@ Future work could involve further optimizing the model for even lower computatio
 ## Images
 
 ![Image 1](demo.png)
-![Image 2](path/to/image2.jpg)
+
+## screen video split demo
+
+![Image 2](demo_image_split_detection.jpg)

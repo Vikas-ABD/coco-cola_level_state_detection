@@ -143,66 +143,103 @@ freq = cv2.getTickFrequency()
 # Initialize video stream
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
+#v = 0
 
-#for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
 
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
-
-    # Grab frame from video stream
+    
+    # Read the single image
+    #image_path = "demo.png"
+    #image = cv2.imread(image_path)
+    #image = cv2.resize(image, (640, 640))
+    
+    
+    
+    
+    # Capture frame from the camera
+    # camera video
     frame1 = videostream.read()
-
-    # Acquire frame and resize to expected shape [1xHxWx3]
     frame = frame1.copy()
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
-    input_data = np.expand_dims(frame_resized, axis=0)
+    image=frame_rgb
 
-    # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-    if floating_model:
-        input_data = (np.float32(input_data) - input_mean) / input_std
+    # Split the image into four parts from left to right
+    height, width, _ = image.shape
+    part_width = width // 4
 
-    # Perform the actual detection by running the model with the image as input
-    interpreter.set_tensor(input_details[0]['index'],input_data)
-    interpreter.invoke()
+    detection_results = []
 
-    # Retrieve detection results
-    boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-    scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+    for j in range(4):
 
-    # Loop over all detections and draw detection box if confidence is above minimum threshold
-    for i in range(len(scores)):
-        if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+        # Extract the current part
+        start_x = j * part_width
+        end_x = start_x + part_width
+        part = image[:, start_x:end_x, :]
 
-            # Get bounding box coordinates and draw box
-            # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-            ymin = int(max(1,(boxes[i][0] * imH)))
-            xmin = int(max(1,(boxes[i][1] * imW)))
-            ymax = int(min(imH,(boxes[i][2] * imH)))
-            xmax = int(min(imW,(boxes[i][3] * imW)))
-            
-            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+        # Resize the part to the expected input shape
+        part_resized = cv2.resize(part, (640, 640))
+        frame_resized = part_resized
+        input_data = np.expand_dims(frame_resized, axis=0)
 
-            # Draw label
-            object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-            label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-            labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-            label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-            cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-            cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+        # Normalize pixel values if using a floating model (i.e., if the model is non-quantized)
+        if floating_model:
+            input_data = (np.float32(input_data) - input_mean) / input_std
 
-    # Draw framerate in corner of frame
-    cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        # Perform the actual detection by running the model with the image as input
+        interpreter.set_tensor(input_details[0]['index'], input_data)
+        interpreter.invoke()
 
-    # All the results have been drawn on the frame, so it's time to display it.
-    cv2.imshow('Object detector', frame)
+        # Retrieve detection results
+        boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0]  # Bounding box coordinates of detected objects
+        classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0]  # Class index of detected objects
+        scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0]  # Confidence of detected objects
+
+        # Loop over all detections and draw detection box if confidence is above the minimum threshold
+        for i in range(len(scores)):
+            if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+
+                # Get bounding box coordinates and draw the box
+                ymin = int(max(1, (boxes[i][0] * height)))
+                xmin = int(max(1, (boxes[i][1] * width)))
+                ymax = int(min(height, (boxes[i][2] * height)))
+                xmax = int(min(width, (boxes[i][3] * width)))
+
+                cv2.rectangle(part, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
+
+                # Draw label
+                object_name = labels[int(classes[i])]
+                label = '%s: %d%%' % (object_name, int(scores[i] * 100))
+                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+                label_ymin = max(ymin, labelSize[1] + 10)
+                cv2.rectangle(part, (xmin, label_ymin - labelSize[1] - 10),
+                              (xmin + labelSize[0], label_ymin + baseLine - 10), (255, 255, 255), cv2.FILLED)
+                cv2.putText(part, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+
+                # Store the detection class index into the array
+                detection_results.append(int(classes[i]))
+                #print(type(detection_results))
+
+        # Draw framerate in the corner of the frame
+        cv2.putText(part, 'FPS: {0:.2f}'.format(frame_rate_calc), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0),
+                    2, cv2.LINE_AA)
+
+        # Display or save the result if needed
+        cv2.imshow(f'Object detector - Part {j + 1}', part)
+        print(f'Detection results for Part {j + 1}: {detection_results}')
+        cv2.waitKey(100) #delay for nect loop image to display
+         
+    # After the loop
+    print("Final Detection results:", ', '.join(detection_results))
+    print(type(detection_results))
 
     # Calculate framerate
     t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc= 1/time1
+    time1 = (t2 - t1) / freq
+    frame_rate_calc = 1 / time1
+    #v = v + 1
 
     # Press 'q' to quit
     if cv2.waitKey(1) == ord('q'):
@@ -210,4 +247,3 @@ while True:
 
 # Clean up
 cv2.destroyAllWindows()
-videostream.stop()
