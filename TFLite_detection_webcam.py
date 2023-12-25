@@ -60,7 +60,7 @@ parser.add_argument('--graph', help='Name of the .tflite file, if different than
 parser.add_argument('--labels', help='Name of the labelmap file, if different than labelmap.txt',
                     default='labelmap.txt')
 parser.add_argument('--threshold', help='Minimum confidence threshold for displaying detected objects',
-                    default=0.5)
+                    default=0.3)
 parser.add_argument('--resolution', help='Desired webcam resolution in WxH. If the webcam does not support the resolution entered, errors may occur.',
                     default='640x640')
 parser.add_argument('--edgetpu', help='Use Coral Edge TPU Accelerator to speed up detection',
@@ -170,7 +170,7 @@ while True:
     height, width, _ = image.shape
     part_width = width // 4
 
-    detection_results = []
+    detection_results = [-1,-1,-1,-1]
 
     for j in range(4):
 
@@ -230,7 +230,7 @@ while True:
                 cv2.putText(part, label, (xmin, label_ymin), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
 
             # Store the detection class index into the array
-                detection_results.append(int(classes[max_score_index]))
+                detection_results[j]=(int(classes[max_score_index]))
 
         # Draw framerate in the corner of the frame
         cv2.putText(part, 'FPS: {0:.2f}'.format(frame_rate_calc), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0),
