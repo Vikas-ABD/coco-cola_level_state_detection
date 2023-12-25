@@ -196,31 +196,41 @@ while True:
         boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0]  # Bounding box coordinates of detected objects
         classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0]  # Class index of detected objects
         scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0]  # Confidence of detected objects
+        print(classes)
+        # Find the index of the detection with the maximum score
+        #max_score_index = scores.index(max(scores))
+        # Convert scores to a NumPy array
+        scores_np = np.array(scores)
 
-        # Loop over all detections and draw detection box if confidence is above the minimum threshold
-        for i in range(len(scores)):
-            if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+# Find the index of the maximum score
+        max_score_index = np.argmax(scores_np)
+        
+        # Check if the maximum score is above the threshold
+        if scores_np[max_score_index] >= min_conf_threshold:
+            
+            
+# Get bounding box coordinates and draw the box on the original image 'part'
+            ymin = int(max(1, (boxes[max_score_index][0] * height)))
+            xmin = int(max(1, (boxes[max_score_index][1] * width)))
+            ymax = int(min(height, (boxes[max_score_index][2] * height)))
+            xmax = int(min(width, (boxes[max_score_index][3] * width)))
 
-                # Get bounding box coordinates and draw the box
-                ymin = int(max(1, (boxes[i][0] * height)))
-                xmin = int(max(1, (boxes[i][1] * width)))
-                ymax = int(min(height, (boxes[i][2] * height)))
-                xmax = int(min(width, (boxes[i][3] * width)))
-
+# Ensure that the coordinates are valid
+            if ymin > 0 and xmin > 0 and ymax > 0 and xmax > 0:
+                
+            
                 cv2.rectangle(part, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
 
                 # Draw label
-                object_name = labels[int(classes[i])]
-                label = '%s: %d%%' % (object_name, int(scores[i] * 100))
-                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
-                label_ymin = max(ymin, labelSize[1] + 10)
-                cv2.rectangle(part, (xmin, label_ymin - labelSize[1] - 10),
-                              (xmin + labelSize[0], label_ymin + baseLine - 10), (255, 255, 255), cv2.FILLED)
-                cv2.putText(part, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+                object_name = labels[int(classes[max_score_index])]
+                label = '%s: %d%%' % (object_name, int(scores[max_score_index] * 100))
+                label_ymin = max(ymin, 15)  # Adjusted to avoid out-of-bounds errors
+                cv2.rectangle(part, (xmin, label_ymin - 15),
+                  (xmin + len(label) * 7, label_ymin + 5), (255, 255, 255), cv2.FILLED)
+                cv2.putText(part, label, (xmin, label_ymin), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
 
-                # Store the detection class index into the array
-                detection_results.append(int(classes[i]))
-                #print(type(detection_results))
+            # Store the detection class index into the array
+                detection_results.append(int(classes[max_score_index]))
 
         # Draw framerate in the corner of the frame
         cv2.putText(part, 'FPS: {0:.2f}'.format(frame_rate_calc), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0),
@@ -232,7 +242,7 @@ while True:
         cv2.waitKey(100) #delay for nect loop image to display
          
     # After the loop
-    print("Final Detection results:", ', '.join(detection_results))
+    print(detection_results)
     print(type(detection_results))
 
     # Calculate framerate
