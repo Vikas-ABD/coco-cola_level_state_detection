@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOLOv8 Object Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid black;
+            margin-top: 20px;
+            max-width: 100%;
+        }
+
+        #uploadInput {
+            display: none;
+        }
+
+        .upload-button {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .upload-button:hover {
+            background-color: #444;
+        }
+
+        .detected-object {
+            background-color: rgba(0, 255, 0, 0.7);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOLOv8 Object Detection</h1>
+    </header>
+    <div class="container">
+        <input id="uploadInput" type="file"/>
+        <label for="uploadInput" class="upload-button">Upload Image</label>
+        <canvas></canvas>
+    </div>
+    <script>
+        const input = document.getElementById("uploadInput");
+        input.addEventListener("change", async (event) => {
+            const data = new FormData();
+            data.append("image_file", event.target.files[0], "image_file");
+            const response = await fetch("/detect", {
+                method: "post",
+                body: data
+            });
+            const boxes = await response.json();
+            drawImageAndBoxes(event.target.files[0], boxes);
+        })
+
+        function drawImageAndBoxes(file, boxes) {
+            const img = new Image()
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.querySelector("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                ctx.strokeStyle = "#00FF00";
+                ctx.lineWidth = 3;
+                ctx.font = "18px Arial, sans-serif";
+                boxes.forEach(([x1, y1, x2, y2, label]) => {
+                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                    ctx.fillStyle = "#00ff00";
+                    const width = ctx.measureText(label).width;
+                    ctx.fillRect(x1, y1, width + 10, 25);
+                    ctx.fillStyle = "#000000";
+                    ctx.fillText(label, x1, y1 + 18);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

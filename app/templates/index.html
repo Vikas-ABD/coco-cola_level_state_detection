@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resume Classification App</title>
+  <style>
+    /* Body styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header styles */
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-top: 20px;
+    }
+
+    /* Form container styles */
+    form {
+      text-align: center;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+    }
+
+    /* File input styles */
+    input[type="file"] {
+      display: block;
+      margin: 0 auto;
+      padding: 10px;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      width: 80%;
+      outline: none;
+    }
+
+    /* Button styles */
+    button[type="submit"] {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    /* Result container styles */
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-top: 20px;
+    }
+
+    /* Result image styles */
+    img {
+      display: block;
+      margin: 20px auto;
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume Classification App</h1>
+  <form action="/detect" method="POST" enctype="multipart/form-data">
+    <input type="file" name="image" accept=".jpg, .jpeg, .png" />
+    <button type="submit">Detect Objects</button>
+  </form>
+  <br />
+  <h2>Result:</h2>
+  <img src="{{ result_image }}" alt="Detected Objects" />
+</body>
+</html>
