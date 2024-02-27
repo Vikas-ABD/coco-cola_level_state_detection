@@ -1,5 +1,6 @@
-numpy
-six
+keras
 tensorflow
+opencv-python
+flask
+numpy
 matplotlib
-Pillow
