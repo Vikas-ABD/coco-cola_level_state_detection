@@ -67,3 +67,7 @@ Future work could involve further optimizing the model for even lower computatio
 
 
 ## flask web app demo
+
+![Image 3](flask_demo.png)
+
+
