@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 app = Flask(__name__)
 
 # Load the TFLite model and allocate tensors.
-interpreter = tf.lite.Interpreter(model_path="custom_ssd_model\custom_model_lite\detect.tflite")
+interpreter = tf.lite.Interpreter(model_path=r"custom_ssd_model/custom_model_lite/detect.tflite")
 interpreter.allocate_tensors()
 height=640
 width=640
