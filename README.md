@@ -63,3 +63,7 @@ Future work could involve further optimizing the model for even lower computatio
 ## screen video split demo
 
 ![Image 2](demo_image_split_detection.jpg)
+
+
+
+## flask web app demo
